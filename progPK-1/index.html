@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Рулетка программ ПК</title>
 
+<!-- VK BRIDGE -->
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+
 <style>
 body {
     margin: 0;
@@ -154,6 +157,13 @@ button:hover {
 </a>
 
 <script>
+/* VK INIT */
+if (window.vkBridge) {
+    vkBridge.send('VKWebAppInit')
+        .then(() => console.log('VK Bridge initialized'))
+        .catch(err => console.error('VK Bridge error:', err));
+}
+
 /* ПРОГРАММЫ */
 const programs = [
     { name:"SumatraPDF", icon:"icons/sumatrapdf.png", url:"https://www.sumatrapdfreader.org", description:"Лёгкая и быстрая программа для просмотра PDF, DJVU и EPUB." },
@@ -244,4 +254,3 @@ spin();
 
 </body>
 </html>
-

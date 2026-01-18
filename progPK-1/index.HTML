@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Рулетка программ ПК</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: url("background.jpg") center / cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+}
+
+/* ОСНОВНОЙ БЛОК */
+.overlay {
+    background: rgba(0, 0, 0, 0.65);
+    padding: 30px 40px;
+    border-radius: 25px;
+    box-shadow: 0 0 40px gold;
+}
+
+.slot-machine {
+    text-align: center;
+    color: white;
+    width: 560px;
+}
+
+.reels {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 20px;
+    justify-content: center;
+}
+
+.reel {
+    width: 130px;
+    height: 130px;
+    background: linear-gradient(#eee, #aaa);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: inset 0 0 15px #000;
+}
+
+.reel img {
+    max-width: 100px;
+    max-height: 100px;
+}
+
+button {
+    padding: 14px 40px;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 14px;
+    background: gold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: orange;
+}
+
+#downloadBtn {
+    display: none;
+    background: #4CAF50;
+    margin-top: 15px;
+}
+
+#downloadBtn:hover {
+    background: #45a049;
+}
+
+.result {
+    margin-top: 15px;
+    font-size: 22px;
+}
+
+/* БЛОК ОПИСАНИЯ */
+.program-info {
+    display: none;
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+}
+
+.program-info h3 {
+    margin: 0 0 8px;
+    color: gold;
+}
+
+.program-info p {
+    margin: 0;
+    font-size: 16px;
+    color: #ddd;
+}
+
+/* ===== АВТОР ===== */
+.author {
+    position: fixed;
+    bottom: 10px;
+    left: 12px;
+    font-size: 12px;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    animation: authorColor 4s ease-in-out infinite;
+}
+
+/* АНИМАЦИЯ СМЕНЫ ЦВЕТА */
+@keyframes authorColor {
+    0%   { color: white; }
+    50%  { color: black; }
+    100% { color: white; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="overlay">
+    <div class="slot-machine">
+
+        <div class="reels">
+            <div class="reel"><img id="r1"></div>
+            <div class="reel"><img id="r2"></div>
+            <div class="reel"><img id="r3"></div>
+        </div>
+
+        <button onclick="spin()">Крутить</button>
+
+        <div class="result" id="result"></div>
+
+        <div class="program-info" id="programInfo">
+            <h3 id="programName"></h3>
+            <p id="programDescription"></p>
+        </div>
+
+        <button id="downloadBtn" onclick="downloadProgram()">Скачать</button>
+
+    </div>
+</div>
+
+<!-- АВТОР -->
+<a href="https://example.com" target="_blank" class="author">
+    Автор: YourName
+</a>
+
+<script>
+/* ПРОГРАММЫ */
+const programs = [
+    { name:"SumatraPDF", icon:"icons/sumatrapdf.png", url:"https://www.sumatrapdfreader.org", description:"Лёгкая и быстрая программа для просмотра PDF, DJVU и EPUB." },
+    { name:"PDF24 Creator", icon:"icons/pdf24.png", url:"https://en.pdf24.org", description:"Создание, объединение и редактирование PDF-файлов." },
+    { name:"OpenOffice", icon:"icons/openoffice.png", url:"https://www.openoffice.org", description:"Бесплатный офисный пакет для документов и таблиц." },
+    { name:"LibreOffice", icon:"icons/libreoffice.png", url:"https://www.libreoffice.org", description:"Современный офисный пакет с поддержкой форматов Microsoft." },
+    { name:"AIMP", icon:"icons/aimp.png", url:"https://www.aimp.ru", description:"Музыкальный плеер с эквалайзером и плейлистами." },
+    { name:"Audacity", icon:"icons/audacity.png", url:"https://www.audacityteam.org", description:"Запись и редактирование звука, подкастов и музыки." },
+    { name:"Media Player Classic", icon:"icons/mpc.png", url:"https://codecguide.com", description:"Лёгкий видеоплеер без лишних функций." },
+    { name:"VLC media player", icon:"icons/vlc.png", url:"https://www.videolan.org", description:"Универсальный плеер для видео и аудио." },
+    { name:"FxSound", icon:"icons/fxsound.png", url:"https://www.fxsound.com", description:"Улучшение качества звука в наушниках и колонках." },
+    { name:"Format Factory", icon:"icons/formatfactory.png", url:"http://www.pcfreetime.com", description:"Конвертация видео, аудио и изображений." },
+    { name:"XnView Classic", icon:"icons/xnview.png", url:"https://www.xnview.com/en/xnview/", description:"Просмотр, сортировка и базовая обработка изображений." },
+    { name:"IrfanView", icon:"icons/irfanview.png", url:"https://www.irfanview.com/", description:"Быстрый просмотр и простое редактирование изображений." },
+    { name:"Everything", icon:"icons/everything.png", url:"https://www.voidtools.com", description:"Мгновенный поиск файлов на компьютере." },
+    { name:"PrivaZer", icon:"icons/privazer.png", url:"https://privazer.com", description:"Очистка системы от мусора и следов активности." },
+    { name:"Windows 10", icon:"icons/windows10.png", url:"https://www.comss.ru/page.php?id=2572", description:"Операционная система Microsoft Windows 10." },
+    { name:"Windows 11", icon:"icons/windows11.png", url:"https://www.comss.ru/page.php?id=9234", description:"Новая версия Windows с современным дизайном." },
+    { name:"7-Zip", icon:"icons/7zip.png", url:"https://www.7-zip.org", description:"Архиватор для сжатия и распаковки файлов." },
+    { name:"GIMP", icon:"icons/gimp.png", url:"https://www.gimp.org", description:"Мощный бесплатный графический редактор." }
+];
+
+let выиграннаяПрограмма = null;
+const WIN_CHANCE = 0.7;
+
+/* РУЛЕТКА */
+function randomProgram() {
+    return programs[Math.floor(Math.random() * programs.length)];
+}
+
+function spin() {
+    const r1 = document.getElementById("r1");
+    const r2 = document.getElementById("r2");
+    const r3 = document.getElementById("r3");
+    const result = document.getElementById("result");
+    const info = document.getElementById("programInfo");
+    const downloadBtn = document.getElementById("downloadBtn");
+
+    result.textContent = "";
+    info.style.display = "none";
+    downloadBtn.style.display = "none";
+    выиграннаяПрограмма = null;
+
+    const isWin = Math.random() < WIN_CHANCE;
+    const finalProgram = randomProgram();
+
+    let spins = 22;
+    const timer = setInterval(() => {
+        let p1 = randomProgram();
+        let p2 = randomProgram();
+        let p3 = randomProgram();
+
+        if (spins <= 3 && isWin) {
+            p1 = p2 = p3 = finalProgram;
+        }
+
+        r1.src = p1.icon;
+        r2.src = p2.icon;
+        r3.src = p3.icon;
+
+        spins--;
+
+        if (spins <= 0) {
+            clearInterval(timer);
+
+            if (isWin) {
+                выиграннаяПрограмма = finalProgram;
+                result.textContent = "🎉 Ты выиграл программу!";
+                document.getElementById("programName").textContent = finalProgram.name;
+                document.getElementById("programDescription").textContent = finalProgram.description;
+                info.style.display = "block";
+                downloadBtn.style.display = "inline-block";
+            } else {
+                result.textContent = "Попробуй ещё раз";
+            }
+        }
+    }, 80);
+}
+
+function downloadProgram() {
+    if (выиграннаяПрограмма) {
+        window.open(выиграннаяПрограмма.url, "_blank");
+    }
+}
+
+spin();
+</script>
+
+</body>
+</html>

@@ -30,6 +30,15 @@ h1 { text-align: center; margin-bottom: 20px; }
 <h1>Меню программ</h1>
 <div class="program-list" id="programList"></div>
 
+  <!-- VK Bridge -->
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<script>
+  // Инициализация VK Mini Apps
+  vkBridge.send('VKWebAppInit')
+    .then(() => console.log('VK Bridge инициализирован'))
+    .catch(err => console.error('Ошибка инициализации VK Bridge', err));
+</script>
+  
 <script>
 const programs = [
   { name:"SumatraPDF", icon:"icons/sumatrapdf.png", url:"https://www.sumatrapdfreader.org", description:"Лёгкая и быстрая программа для просмотра PDF, DJVU и EPUB.", key: "" },

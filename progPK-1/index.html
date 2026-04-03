@@ -5,23 +5,120 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Меню программ</title>
 <style>
-body { font-family: Arial, sans-serif; background: #f0f0f0; margin: 0; padding: 20px; }
-h1 { text-align: center; margin-bottom: 20px; }
-.program-list { display: flex; flex-direction: column; gap: 12px; max-width: 900px; margin: 0 auto; }
-.program-card { display: flex; align-items: center; padding: 10px; border-radius: 8px; background: #fff; border: 1px solid #ccc; transition: 0.2s; }
-.program-card:hover { background: #f0f9ff; border-color: #93c5fd; }
-.program-card img { width: 50px; height: 50px; margin-right: 12px; border-radius: 6px; object-fit: contain; background: #fff; border: 1px solid #ddd; padding: 4px; }
-.program-info { flex: 1; }
-.program-info strong { display: block; font-size: 16px; margin-bottom: 4px; }
-.program-info small { color: #555; }
-.btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
-.download-btn { padding: 6px 12px; background: #16a34a; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; transition: 0.2s; }
-.download-btn:hover { background: #15803d; }
+html, body {
+  height: 100%;
+  overflow-y: auto; /* вертикальная прокрутка */
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #f0f0f0;
+}
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+.program-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+.program-card {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #ccc;
+  transition: 0.2s;
+}
+.program-card:hover {
+  background: #f0f9ff;
+  border-color: #93c5fd;
+}
+.program-card img {
+  width: 50px;
+  height: 50px;
+  margin-right: 12px;
+  border-radius: 6px;
+  object-fit: contain;
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 4px;
+}
+.program-info {
+  flex: 1;
+}
+.program-info strong {
+  display: block;
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+.program-info small {
+  color: #555;
+}
+.btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.download-btn {
+  padding: 6px 12px;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.2s;
+}
+.download-btn:hover {
+  background: #15803d;
+}
 @media (max-width: 600px) {
-  .program-card { flex-direction: column; align-items: flex-start; }
-  .program-card img { margin-bottom: 8px; }
-  .btn-group { width: 100%; }
-  .download-btn { width: 100%; text-align: center; margin-top: 8px; }
+  .program-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .program-card img {
+    margin-bottom: 8px;
+  }
+  .btn-group {
+    width: 100%;
+  }
+  .download-btn {
+    width: 100%;
+    text-align: center;
+    margin-top: 8px;
+  }
+}
+
+
+/* Футер и анимация автора */
+footer {
+  text-align: center;
+  margin-top: 40px;
+  font-size: 14px;
+}
+.author-link {
+  display: inline-block;
+  color: #888; /* серый */
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+  transition: color 0.3s ease;
+  animation: floatColor 3s infinite alternate;
+}
+.author-link:hover {
+  cursor: pointer;
+}
+@keyframes floatColor {
+  0% { transform: translateX(0); color: #888; }
+  50% { transform: translateX(10px); color: #fff; }
+  100% { transform: translateX(0); color: #888; }
 }
 </style>
 </head>
@@ -30,7 +127,7 @@ h1 { text-align: center; margin-bottom: 20px; }
 <h1>Меню программ</h1>
 <div class="program-list" id="programList"></div>
 
-  <!-- VK Bridge -->
+<!-- VK Bridge -->
 <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
 <script>
   // Инициализация VK Mini Apps
@@ -38,26 +135,26 @@ h1 { text-align: center; margin-bottom: 20px; }
     .then(() => console.log('VK Bridge инициализирован'))
     .catch(err => console.error('Ошибка инициализации VK Bridge', err));
 </script>
-  
+
 <script>
 const programs = [
-  { name:"SumatraPDF", icon:"icons/sumatrapdf.png", url:"https://www.sumatrapdfreader.org", description:"Лёгкая и быстрая программа для просмотра PDF, DJVU и EPUB.", key: "" },
-  { name:"OpenOffice", icon:"icons/openoffice.png", url:"https://openoffice.apache.org", description:"Бесплатный офисный пакет для документов и таблиц.", key: "" },
-  { name:"LibreOffice", icon:"icons/libreoffice.png", url:"https://www.libreoffice.org", description:"Современный офисный пакет с поддержкой форматов Microsoft.", key: "" },
+  { name:"SumatraPDF", icon:"icons/sumatrapdf.png", url:"https://www.sumatrapdfreader.org", description:"Лёгкая и быстрая программа для просмотра PDF, DJVU и EPUB." },
+  { name:"OpenOffice", icon:"icons/openoffice.png", url:"https://openoffice.apache.org", description:"Бесплатный офисный пакет для документов и таблиц." },
+  { name:"LibreOffice", icon:"icons/libreoffice.png", url:"https://www.libreoffice.org", description:"Современный офисный пакет с поддержкой форматов Microsoft." },
   { name:"FastStone Capture", icon:"icons/FastStone.png", url:"https://www.faststone.org/FSCaptureDetail.htm", description:"Программа для создания скриншотов и записи видео с экрана.", key: "AXRQS-RHMSV-FXCHR-PDURO", usernameRequired: true, user: "Triniti school" },
-  { name:"AIMP", icon:"icons/aimp.png", url:"https://www.aimp.ru", description:"Музыкальный плеер с эквалайзером и плейлистами.", key: "" },
-  { name:"Audacity", icon:"icons/audacity.png", url:"https://www.softportal.com/software-12584-audacity.html", description:"Запись и редактирование звука, подкастов и музыки.", key: "" },
-  { name:"Media Player Classic", icon:"icons/mpc.png", url:"https://codecguide.com", description:"Лёгкий видеоплеер без лишних функций.", key: "" },
-  { name:"VLC media player", icon:"icons/vlc.png", url:"https://www.videolan.org", description:"Универсальный плеер для видео и аудио.", key: "" },
-  { name:"FxSound", icon:"icons/fxsound.png", url:"https://www.softportal.com/software-44231-fxsound.html", description:"Улучшение качества звука в наушниках и колонках.", key: "" },
-  { name:"Format Factory", icon:"icons/formatfactory.png", url:"https://www.softportal.com/software-9536-format-factory.html", description:"Конвертация видео, аудио и изображений.", key: "" },
-  { name:"XnView Classic", icon:"icons/xnview.png", url:"https://www.xnview.com/en/xnview", description:"Просмотр, сортировка и базовая обработка изображений.", key: "" },
-  { name:"IrfanView", icon:"icons/irfanview.png", url:"https://www.irfanview.com", description:"Быстрый просмотр и простое редактирование изображений.", key: "" },
-  { name:"Everything", icon:"icons/everything.png", url:"https://www.voidtools.com", description:"Мгновенный поиск файлов на компьютере.", key: "" },
-  { name:"Windows 10", icon:"icons/windows10.png", url:"https://www.comss.ru/page.php?id=2572", description:"Операционная система Microsoft Windows 10.", key: "" },
-  { name:"Windows 11", icon:"icons/windows11.png", url:"https://www.comss.ru/page.php?id=9234", description:"Новая версия Windows 11 с современным дизайном.", key: "" },
-  { name:"7-Zip", icon:"icons/7zip.png", url:"https://www.comss.ru/page.php?id=2022", description:"Архиватор для сжатия и распаковки файлов.", key: "" },
-  { name:"Paint.net", icon:"icons/Paint.png", url:"https://www.getpaint.net/download.html", description:"Программа для редактирования изображений и фотографий на Windows.", key: "" }
+  { name:"AIMP", icon:"icons/aimp.png", url:"https://www.aimp.ru", description:"Музыкальный плеер с эквалайзером и плейлистами." },
+  { name:"Audacity", icon:"icons/audacity.png", url:"https://www.softportal.com/software-12584-audacity.html", description:"Запись и редактирование звука, подкастов и музыки." },
+  { name:"Media Player Classic", icon:"icons/mpc.png", url:"https://codecguide.com", description:"Лёгкий видеоплеер без лишних функций." },
+  { name:"VLC media player", icon:"icons/vlc.png", url:"https://www.videolan.org", description:"Универсальный плеер для видео и аудио." },
+  { name:"FxSound", icon:"icons/fxsound.png", url:"https://www.softportal.com/software-44231-fxsound.html", description:"Улучшение качества звука в наушниках и колонках." },
+  { name:"Format Factory", icon:"icons/formatfactory.png", url:"https://www.softportal.com/software-9536-format-factory.html", description:"Конвертация видео, аудио и изображений." },
+  { name:"XnView Classic", icon:"icons/xnview.png", url:"https://www.xnview.com/en/xnview", description:"Просмотр, сортировка и базовая обработка изображений." },
+  { name:"IrfanView", icon:"icons/irfanview.png", url:"https://www.irfanview.com", description:"Быстрый просмотр и простое редактирование изображений." },
+  { name:"Everything", icon:"icons/everything.png", url:"https://www.voidtools.com", description:"Мгновенный поиск файлов на компьютере." },
+  { name:"Windows 10", icon:"icons/windows10.png", url:"https://www.comss.ru/page.php?id=2572", description:"Операционная система Microsoft Windows 10." },
+  { name:"Windows 11", icon:"icons/windows11.png", url:"https://www.comss.ru/page.php?id=9234", description:"Новая версия Windows 11 с современным дизайном." },
+  { name:"7-Zip", icon:"icons/7zip.png", url:"https://www.comss.ru/page.php?id=2022", description:"Архиватор для сжатия и распаковки файлов." },
+  { name:"Paint.net", icon:"icons/Paint.png", url:"https://www.getpaint.net/download.html", description:"Программа для редактирования изображений и фотографий на Windows." }
 ];
 
 const programList = document.getElementById('programList');
@@ -66,7 +163,7 @@ programs.forEach(p => {
   const card = document.createElement('div');
   card.className = 'program-card';
   
-  // Кнопка показа ключа
+  // Кнопка показа ключа, если есть
   let keyButton = '';
   if (p.key) {
     if (p.usernameRequired) {
@@ -91,9 +188,8 @@ programs.forEach(p => {
 });
 </script>
 
-  <!-- Автор приложения -->
-<footer>
-  Автор приложения: <a href="https://vk.com/muzer_play" target="_blank">Triniti school</a>
+  <footer>
+  <a href="https://vk.com/muzer_play" target="_blank" class="author-link">Автор приложения</a>
 </footer>
 
 </body>

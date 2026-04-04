@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конструктор обложек для VK</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #003366 0%, #002040 100%); min-height: 100vh; padding: 10px; }
+        .app { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden; position: relative; }
+        .header { background: #0A58CA; color: white; padding: 15px 20px; text-align: center; }
+        .canvas-container { padding: 20px; text-align: center; background: #f8f9fa; position: relative; }
+        #canvas { max-width: 100%; max-height: 400px; width: auto; height: auto; border: 3px solid #ddd; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: grab; touch-action: none; }
+
+        .controls { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
+        input, select, button { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+        button { background: #0A58CA; color: white; border: none; cursor: pointer; transition: background 0.2s; min-width: 100px; }
+        button:hover { background: #084aad; }
+        .size-group { display: flex; gap: 5px; align-items: center; }
+        .size-group label { font-size: 13px; white-space: nowrap; }
+        .size-group input { width: 80px; }
+        .slider-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+        .upload-btn { position: relative; overflow: hidden; }
+        .upload-btn input[type=file] { position: absolute; left: -9999px; }
+        .overlay-upload {
+            background: #6c757d;   /* серый фон */
+            color: white;          /* белый текст */
+        }
+        .overlay-upload:hover {
+            background: #5a6268;   /* чуть темнее серый при наведении */
+        }
+
+        /* Кнопка "Сайты нейросетей" */
+        #toggle-sites-btn {
+            position: relative;
+            z-index: 11;
+        }
+
+        /* Надпись сверху меню */
+        #sites-menu-title {
+            display: none;
+            position: absolute;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 2px 8px;
+            background: #0A58CA;
+            color: white;
+            font-size: 13px;
+            border-radius: 6px 6px 0 0;
+            z-index: 20;
+        }
+        /* Меню под заголовком */
+        #sites-menu {
+            display: none;
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 260px;
+            max-height: 220px;
+            padding: 10px 8px 4px 8px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border: 1px solid #cfe2ff;
+            font-size: 13px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+            z-index: 19;
+        }
+        #sites-menu a {
+            display: block;
+            padding: 4px 0 4px 4px;
+            color: #0A58CA;
+            text-decoration: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        #sites-menu a:hover {
+            text-decoration: underline;
+            background: #e3f2fd;
+            border-radius: 4px;
+        }
+
+        /* Плавная надпись автора */
+        .author-badge {
+            position: relative;
+            margin-top: 10px;
+            text-align: center;
+            font-size: 11px;
+            font-family: Arial, sans-serif;
+            letter-spacing: 0.5px;
+            animation: fadeLoop 3s ease-in-out infinite;
+        }
+
+        #author-link {
+            color: rgba(100, 100, 100, 0.8);
+            text-decoration: none;
+            display: inline-block;
+            transition: color 0.3s ease;
+        }
+
+        #author-link:hover {
+            color: #0A58CA;
+        }
+
+        @keyframes fadeLoop {
+            0%, 100% {
+                opacity: 0.4;
+            }
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        @media (max-width: 768px) { 
+            .controls { flex-direction: column; padding: 15px; } 
+            .size-group { flex-wrap: wrap; } 
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h2>🎨 Конструктор обложек для VK</h2>
+            <small>••••••••••••••••••••</small>
+        </div>
+
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="controls">
+            <div class="size-group">
+                <label>Фон:</label>
+                <input type="number" id="width" value="1920" min="1">
+                <label>×</label>
+                <input type="number" id="height" value="768" min="1">
+                <button onclick="applyResize()">▲ Размер фона</button>
+            </div>
+
+            <label class="upload-btn">
+                <input type="file" id="upload-bg" accept="image/png,image/jpeg">
+                🖼️ Фон PNG/JPG
+            </label>
+
+            <label class="upload-btn overlay-upload">
+                <input type="file" id="upload-overlay" accept="image/png,image/jpeg">
+                ➕ Overlay PNG/JPG
+            </label>
+
+            <div class="size-group">
+                <label> :</label>
+                <button id="toggle-sites-btn">🌐 Открыть меню</button>
+            </div>
+
+            <button onclick="clearCanvas()">🗑️ Очистить</button>
+
+            <div class="size-group">
+                <label>Скачать:</label>
+                <select id="format">
+                    <option value="image/png">PNG</option>
+                    <option value="image/jpeg">JPG</option>
+                </select>
+                <button onclick="downloadCanvas()">💾 Скачать</button>
+            </div>
+
+            <div class="slider-group" style="display:none;" id="overlay-slider">
+                <label>Размер overlay:</label>
+                <input type="range" id="overlay-scale" min="10" max="200" value="30" style="width:120px;">
+            </div>
+        </div>
+
+        <!-- Плавная надпись автора -->
+        <div class="author-badge">
+            <a href="https://vk.com/muzer_play" target="_blank" id="author-link">
+                автор приложения для VK
+            </a>
+        </div>
+    </div>
+
+    <!-- Надпись сверху меню -->
+    <div id="sites-menu-title">Сайты нейросетей</div>
+
+    <!-- Меню поверх конструктора -->
+    <div id="sites-menu">
+        <a href="https://pr-cy.ru/ai-image-generator" target="_blank">pr-cy. ai.</a>
+        <a href="https://mashagpt.ru/tools/generator-kartinok" target="_blank">mashagpt</a>
+        <a href="https://magiceraser.org/ru/ai-image-editor" target="_blank">Magic Eraser</a>
+        <a href="https://imgupscaler.ai/ru/image-to-image" target="_blank">imgupscaler.ai</a>
+        <a href="https://fabula-ai.com/tools/art-generator" target="_blank">fabula-ai</a>
+        <a href="https://chat.qwen.ai" target="_blank">Qwen</a>
+        <a href="https://ru.textstudio.com/" target="_blank">Генератор шрифтов</a>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const widthInput = document.getElementById('width');
+        const heightInput = document.getElementById('height');
+        const overlaySlider = document.getElementById('overlay-slider');
+        const overlayScale = document.getElementById('overlay-scale');
+
+        let backgroundImage = null;
+        let overlayImage = null;
+        let overlayX = 100, overlayY = 100, overlayW = 200, overlayH = 200;
+        let overlayBaseScale = 0.3; // базовый масштаб при загрузке
+        let isDragging = false;
+        let startX, startY;
+
+        // Инициализация
+        canvas.width = 1920;
+        canvas.height = 768;
+        initCanvas();
+        updateCanvasView();
+
+        function initCanvas() {
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function updateCanvasView() {
+            canvas.style.maxWidth = '100%';
+            canvas.style.maxHeight = '400px';
+            canvas.style.width = 'auto';
+            canvas.style.height = 'auto';
+        }
+
+        // Загрузка фона (PNG/JPG)
+        document.getElementById('upload-bg').addEventListener('change', (e) => {
+            loadImage(e.target.files[0], (img) => {
+                backgroundImage = img;
+                redraw();
+            });
+        });
+
+        // Загрузка overlay (PNG/JPG)
+        document.getElementById('upload-overlay').addEventListener('change', (e) => {
+            loadImage(e.target.files[0], (img) => {
+                overlayImage = img;
+                overlayBaseScale = 0.3;
+                overlayW = img.width * overlayBaseScale;
+                overlayH = img.height * overlayBaseScale;
+                redraw();
+                setupOverlaySlider(); // показать ползунок
+            });
+        });
+
+        function loadImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => callback(img);
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function redraw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#f0f0f0';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (backgroundImage) {
+                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+            }
+
+            if (overlayImage) {
+                ctx.save();
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.drawImage(overlayImage, overlayX, overlayY, overlayW, overlayH);
+                ctx.restore();
+            }
+        }
+
+        function applyResize() {
+            canvas.width = parseInt(widthInput.value);
+            canvas.height = parseInt(heightInput.value);
+            overlayX = Math.max(0, Math.min(overlayX, canvas.width - 50));
+            overlayY = Math.max(0, Math.min(overlayY, canvas.height - 50));
+            redraw();
+            updateCanvasView();
+        }
+
+        function clearCanvas() {
+            backgroundImage = null;
+            overlayImage = null;
+            overlayX = 100; overlayY = 100;
+            overlayW = 200; overlayH = 200;
+            overlaySlider.style.display = 'none';
+
+            document.getElementById('upload-bg').value = '';
+            document.getElementById('upload-overlay').value = '';
+
+            initCanvas();
+            updateCanvasView();
+        }
+
+        function downloadCanvas() {
+            const format = document.getElementById('format').value;
+            const link = document.createElement('a');
+            link.download = `oblozhka_vk_${canvas.width}x${canvas.height}.${format === 'image/png' ? 'png' : 'jpg'}`;
+            link.href = canvas.toDataURL(format, 0.95);
+            link.click();
+        }
+
+        function setupOverlaySlider() {
+            overlaySlider.style.display = 'flex';
+
+            overlayScale.value = Math.round(overlayBaseScale * 100); // 0.3 → 30%
+            overlayScale.oninput = () => {
+                const scale = parseInt(overlayScale.value) / 100;
+                if (overlayImage) {
+                    overlayW = overlayImage.width * scale;
+                    overlayH = overlayImage.height * scale;
+                    redraw();
+                }
+            };
+        }
+
+        canvas.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', doDrag);
+        document.addEventListener('mouseup', () => { isDragging = false; });
+
+        function startDrag(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const x = (e.clientX - rect.left) * scaleX;
+            const y = (e.clientY - rect.top) * scaleY;
+
+            if (overlayImage && x >= overlayX && x <= overlayX + overlayW && y >= overlayY && y <= overlayY + overlayH) {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+            }
+        }
+
+        function doDrag(e) {
+            if (!overlayImage || !isDragging) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const dx = (e.clientX - startX) * scaleX;
+            const dy = (e.clientY - startY) * scaleY;
+
+            overlayX += dx;
+            overlayY += dy;
+
+            overlayX = Math.max(0, Math.min(overlayX, canvas.width - overlayW));
+            overlayY = Math.max(0, Math.min(overlayY, canvas.height - overlayH));
+
+            startX = e.clientX;
+            startY = e.clientY;
+            redraw();
+        }
+
+        // Обработчик кнопки "Сайты нейросетей"
+        document.getElementById('toggle-sites-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const menuTitle = document.getElementById('sites-menu-title');
+            const menu = document.getElementById('sites-menu');
+            const isVisible = menu.style.display === 'block';
+
+            if (!isVisible) {
+                menuTitle.style.display = 'block';
+                menu.style.display = 'block';
+            } else {
+                menuTitle.style.display = 'none';
+                menu.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', () => {
+            const menuTitle = document.getElementById('sites-menu-title');
+            const menu = document.getElementById('sites-menu');
+            if (menu.style.display === 'block') {
+                menuTitle.style.display = 'none';
+                menu.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

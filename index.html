@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Конструктор обложек для VK</title>
+
+    <!-- VK Bridge -->
+    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #003366 0%, #002040 100%); min-height: 100vh; padding: 10px; }
@@ -201,6 +205,11 @@
     </div>
 
     <script>
+        // Инициализация VK Bridge
+        vkBridge.send('VKWebAppInit')
+          .then(() => console.log('VK Bridge инициализирован'))
+          .catch(err => console.error('Ошибка инициализации VK Bridge', err));
+
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const widthInput = document.getElementById('width');

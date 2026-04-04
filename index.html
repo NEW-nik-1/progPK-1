@@ -11,10 +11,10 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #003366 0%, #002040 100%); min-height: 100vh; padding: 10px; }
-        .app { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); overflow: hidden; position: relative; }
-        .header { background: #5e6f87; color: white; padding: 15px 20px; text-align: center; }
+        .app { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; overflow: hidden; position: relative; }
+        .header { background: #5e6f87; color: white; padding: 15px 20px; text-align: center; position: relative; }
         .canvas-container { padding: 20px; text-align: center; background: #f8f9fa; position: relative; }
-        #canvas { max-width: 100%; max-height: 400px; width: auto; height: auto; border: 3px solid #ddd; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: grab; touch-action: none; }
+        #canvas { max-width: 100%; max-height: 400px; width: auto; height: auto; border: 3px solid #ddd; border-radius: 10px; cursor: grab; touch-action: none; }
 
         .controls { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
         input, select, button { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
@@ -32,20 +32,100 @@
         .upload-btn { position: relative; overflow: hidden; }
         .upload-btn input[type=file] { position: absolute; left: -9999px; }
         .overlay-upload {
-            background: #6c757d;   /* серый фон */
-            color: white;          /* белый текст */
+            background: #6c757d;
+            color: white;
         }
         .overlay-upload:hover {
-            background: #5a6268;   /* чуть темнее серый при наведении */
+            background: #5a6268;
         }
 
-        /* Кнопка "Сайты нейроссетей" */
+        /* Кнопка "Сайты нейросетей" */
         #toggle-sites-btn {
             position: relative;
             z-index: 11;
         }
 
-        /* Надпись сверху меню */
+        /* Круглая кнопка помощи - ТЁМНО-СЕРЫЙ БЕЗ ТЕНИ */
+        .help-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .help-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #5a6268, #495057);
+        }
+        .help-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Модальное окно видео - БЕЗ ТЕНИ */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .video-modal.active { display: flex; }
+        .video-container {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            width: 100%;
+            background: black;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .video-modal video {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-height: 80vh;
+        }
+        .close-video {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+        }
+        .close-video:hover { 
+            background: #ff6b6b; 
+            color: white; 
+        }
+
+        /* Стили для меню сайтов - БЕЗ ТЕНИ */
         #sites-menu-title {
             display: none;
             position: absolute;
@@ -59,7 +139,6 @@
             border-radius: 6px 6px 0 0;
             z-index: 20;
         }
-        /* Меню под заголовком */
         #sites-menu {
             display: none;
             position: absolute;
@@ -75,7 +154,6 @@
             font-size: 13px;
             overflow-x: hidden;
             overflow-y: auto;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
             z-index: 19;
         }
         #sites-menu a {
@@ -93,7 +171,7 @@
             border-radius: 4px;
         }
 
-        /* Плавная надпись автора */
+        /* Автор - БЕЗ ТЕНИ */
         .author-badge {
             position: relative;
             margin-top: 10px;
@@ -103,30 +181,24 @@
             letter-spacing: 0.5px;
             animation: fadeLoop 3s ease-in-out infinite;
         }
-
         #author-link {
             color: rgba(100, 100, 100, 0.8);
             text-decoration: none;
             display: inline-block;
             transition: color 0.3s ease;
         }
-
         #author-link:hover {
             color: #5e6f87;
         }
-
         @keyframes fadeLoop {
-            0%, 100% {
-                opacity: 0.4;
-            }
-            50% {
-                opacity: 0.8;
-            }
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 0.8; }
         }
 
         @media (max-width: 768px) { 
             .controls { flex-direction: column; padding: 15px; } 
             .size-group { flex-wrap: wrap; } 
+            .help-btn { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 18px; }
         }
     </style>
 </head>
@@ -135,6 +207,11 @@
         <div class="header">
             <h2>🎨 Конструктор обложек для VK</h2>
             <small>••••••••••••••••••••</small>
+            
+            <!-- КРУГЛАЯ КНОПКА ПОМОЩИ - ТЁМНО-СЕРЫЙ -->
+            <button class="help-btn" title="Смотреть инструкцию" onclick="openHelpVideo()">
+                ❓
+            </button>
         </div>
 
         <div class="canvas-container">
@@ -182,7 +259,7 @@
             </div>
         </div>
 
-        <!-- Плавная надпись автора -->
+        <!-- Автор -->
         <div class="author-badge">
             <a href="https://vk.com/muzer_play" target="_blank" id="author-link">
                 автор приложения для VK
@@ -190,10 +267,8 @@
         </div>
     </div>
 
-    <!-- Надпись сверху меню -->
+    <!-- МЕНЮ САЙТОВ -->
     <div id="sites-menu-title">Сайты нейросетей</div>
-
-    <!-- Меню поверх конструктора -->
     <div id="sites-menu">
         <a href="https://pr-cy.ru/ai-image-generator" target="_blank">pr-cy. ai.</a>
         <a href="https://mashagpt.ru/tools/generator-kartinok" target="_blank">mashagpt</a>
@@ -204,12 +279,23 @@
         <a href="https://ru.textstudio.com/" target="_blank">Генератор шрифтов</a>
     </div>
 
-    <script>
-        // Инициализация VK Bridge
-        vkBridge.send('VKWebAppInit')
-          .then(() => console.log('VK Bridge инициализирован'))
-          .catch(err => console.error('Ошибка инициализации VK Bridge', err));
+    <!-- МОДАЛЬНОЕ ОКНО ВИДЕО -->
+    <div class="video-modal" id="videoModal">
+        <div class="video-container">
+            <button class="close-video" onclick="closeHelpVideo()" title="Закрыть">×</button>
+            <video id="helpVideo" controls preload="metadata">
+                <source src="video.mp4" type="video/mp4">
+                <source src="video.webm" type="video/webm">
+                <p>Загрузите файл <strong>video.mp4</strong> в папку с конструктором.</p>
+            </video>
+        </div>
+    </div>
 
+    <script>
+        // VK Bridge
+        vkBridge.send('VKWebAppInit').then(() => console.log('VK Bridge OK')).catch(console.error);
+
+        // Canvas
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const widthInput = document.getElementById('width');
@@ -220,7 +306,7 @@
         let backgroundImage = null;
         let overlayImage = null;
         let overlayX = 100, overlayY = 100, overlayW = 200, overlayH = 200;
-        let overlayBaseScale = 0.3; // базовый масштаб при загрузке
+        let overlayBaseScale = 0.3;
         let isDragging = false;
         let startX, startY;
 
@@ -230,6 +316,7 @@
         initCanvas();
         updateCanvasView();
 
+        // Canvas функции
         function initCanvas() {
             ctx.fillStyle = '#f0f0f0';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -242,7 +329,31 @@
             canvas.style.height = 'auto';
         }
 
-        // Загрузка фона (PNG/JPG)
+        // ВИДЕО ПОМОЩЬ
+        function openHelpVideo() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('helpVideo');
+            modal.classList.add('active');
+            video.play().catch(e => console.log('Автовоспроизведение заблокировано'));
+        }
+
+        function closeHelpVideo() {
+            const modal = document.getElementById('videoModal');
+            const video = document.getElementById('helpVideo');
+            modal.classList.remove('active');
+            video.pause();
+            video.currentTime = 0;
+        }
+
+        // Обработчики видео
+        document.getElementById('videoModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeHelpVideo();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeHelpVideo();
+        });
+
+        // Загрузка изображений
         document.getElementById('upload-bg').addEventListener('change', (e) => {
             loadImage(e.target.files[0], (img) => {
                 backgroundImage = img;
@@ -250,7 +361,6 @@
             });
         });
 
-        // Загрузка overlay (PNG/JPG)
         document.getElementById('upload-overlay').addEventListener('change', (e) => {
             loadImage(e.target.files[0], (img) => {
                 overlayImage = img;
@@ -258,7 +368,7 @@
                 overlayW = img.width * overlayBaseScale;
                 overlayH = img.height * overlayBaseScale;
                 redraw();
-                setupOverlaySlider(); // показать ползунок
+                setupOverlaySlider();
             });
         });
 
@@ -305,10 +415,8 @@
             overlayX = 100; overlayY = 100;
             overlayW = 200; overlayH = 200;
             overlaySlider.style.display = 'none';
-
             document.getElementById('upload-bg').value = '';
             document.getElementById('upload-overlay').value = '';
-
             initCanvas();
             updateCanvasView();
         }
@@ -323,8 +431,7 @@
 
         function setupOverlaySlider() {
             overlaySlider.style.display = 'flex';
-
-            overlayScale.value = Math.round(overlayBaseScale * 100); // 0.3 → 30%
+            overlayScale.value = Math.round(overlayBaseScale * 100);
             overlayScale.oninput = () => {
                 const scale = parseInt(overlayScale.value) / 100;
                 if (overlayImage) {
@@ -335,6 +442,7 @@
             };
         }
 
+        // Drag & Drop
         canvas.addEventListener('mousedown', startDrag);
         document.addEventListener('mousemove', doDrag);
         document.addEventListener('mouseup', () => { isDragging = false; });
@@ -364,7 +472,6 @@
 
             overlayX += dx;
             overlayY += dy;
-
             overlayX = Math.max(0, Math.min(overlayX, canvas.width - overlayW));
             overlayY = Math.max(0, Math.min(overlayY, canvas.height - overlayH));
 
@@ -373,7 +480,7 @@
             redraw();
         }
 
-        // Обработчик кнопки "Сайты нейросетей"
+        // Меню сайтов
         document.getElementById('toggle-sites-btn').addEventListener('click', (e) => {
             e.stopPropagation();
             const menuTitle = document.getElementById('sites-menu-title');

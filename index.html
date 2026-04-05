@@ -1,509 +1,345 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конструктор обложек для VK</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор обложек для VK</title>
+<script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:system-ui,Arial,sans-serif;background:#0f172a;color:#111;padding:10px;}
+.app{max-width:1000px;margin:auto;background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;}
+.header{background:#1e293b;color:#fff;padding:16px;text-align:center;position:relative;}
+.canvas-container{padding:20px;background:#f1f5f9;text-align:center;}
+#canvas{max-width:100%;max-height:400px;border-radius:12px;border:2px solid #e2e8f0;cursor:grab;}
+.controls{padding:15px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;position:relative;align-items:flex-start;}
+button,input,select{padding:10px;border-radius:8px;border:1px solid #cbd5f5;font-size:14px;}
+button{background:#1e293b;color:#fff;cursor:pointer;}
+button:hover{background:#334155;}
+.close-help,.close-video{position:absolute;top:10px;right:10px;width:38px;height:38px;border-radius:50%;background:#111827;color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:.2s;}
+.close-help:hover,.close-video:hover{background:#ef4444;}
+.help-btn{position:absolute;top:10px;right:10px;width:40px;height:40px;border-radius:50%;background:#334155;color:#fff;border:none;cursor:pointer;}
+.help-modal,.video-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);align-items:center;justify-content:center;}
+.help-modal.active,.video-modal.active{display:flex;}
+.help-content{background:#fff;border-radius:16px;padding:20px;max-width:600px;width:90%;position:relative;overflow-y:auto;max-height:80vh;}
+.video-container{width:90%;max-width:800px;background:#000;border-radius:12px;position:relative;}
+.video-container iframe{width:100%;height:450px;}
+.sites-btn{background:#0f172a;color:#fff;border:none;border-radius:8px;padding:10px 15px;cursor:pointer;}
+.sites-btn:hover{background:#334155;}
+#sitesMenu{position:fixed;top:80px;left:50%;transform:translateX(-50%);width:260px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;display:none;padding:8px;z-index:999;}
+#sitesMenu .menu-title{font-size:13px;padding:6px 8px;margin-bottom:6px;background:#1e293b;color:#fff;border-radius:6px 6px 0 0;text-align:center;}
+#sitesMenu a{display:block;padding:8px;text-decoration:none;color:#0f172a;border-radius:6px;}
+#sitesMenu a:hover{background:#e2e8f0;}
 
-    <!-- VK Bridge -->
-    <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+.upload-buttons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
 
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #003366 0%, #002040 100%); min-height: 100vh; padding: 10px; }
-        .app { max-width: 1000px; margin: 0 auto; background: white; border-radius: 15px; overflow: hidden; position: relative; }
-        .header { background: #5e6f87; color: white; padding: 15px 20px; text-align: center; position: relative; }
-        .canvas-container { padding: 20px; text-align: center; background: #f8f9fa; position: relative; }
-        #canvas { max-width: 100%; max-height: 400px; width: auto; height: auto; border: 3px solid #ddd; border-radius: 10px; cursor: grab; touch-action: none; }
+.upload-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+  cursor: pointer;
+  padding: 10px 15px;
+  background: #1e293b;
+  color: #fff;
+  border-radius: 8px;
+  text-align: center;
+}
+.upload-btn:hover{background:#334155;}
+.upload-btn input[type="file"]{position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;}
 
-        .controls { padding: 20px; background: white; border-top: 1px solid #eee; display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; align-items: center; }
-        input, select, button { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
-        button { background: #5e6f87; color: white; border: none; cursor: pointer; transition: background 0.2s; min-width: 100px; }
-        button:hover { background: #4c5b70; }
-        .size-group { display: flex; gap: 5px; align-items: center; }
-        .size-group label { font-size: 13px; white-space: nowrap; }
-        .size-group input { width: 80px; }
-        .slider-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 13px;
-        }
-        .upload-btn { position: relative; overflow: hidden; }
-        .upload-btn input[type=file] { position: absolute; left: -9999px; }
-        .overlay-upload {
-            background: #6c757d;
-            color: white;
-        }
-        .overlay-upload:hover {
-            background: #5a6268;
-        }
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slider-group label {
+  font-size: 13px;
+  color: #111;
+}
 
-        /* Кнопка "Сайты нейросетей" */
-        #toggle-sites-btn {
-            position: relative;
-            z-index: 11;
-        }
+.size-inputs {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
 
-        /* Круглая кнопка помощи - ТЁМНО-СЕРЫЙ БЕЗ ТЕНИ */
-        .help-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #6c757d, #5a6268);
-            border: none;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            color: white;
-            transition: all 0.3s ease;
-            z-index: 100;
-        }
-        .help-btn:hover {
-            transform: scale(1.1);
-            background: linear-gradient(135deg, #5a6268, #495057);
-        }
-        .help-btn:active {
-            transform: scale(0.95);
-        }
+.size-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-        /* Модальное окно видео - БЕЗ ТЕНИ */
-        .video-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .video-modal.active { display: flex; }
-        .video-container {
-            position: relative;
-            max-width: 90vw;
-            max-height: 90vh;
-            width: 100%;
-            background: black;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .video-modal video {
-            width: 100%;
-            height: auto;
-            display: block;
-            max-height: 80vh;
-        }
-        .close-video {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: rgba(255,255,255,0.9);
-            border: none;
-            border-radius: 50%;
-            width: 35px;
-            height: 35px;
-            font-size: 20px;
-            cursor: pointer;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1001;
-        }
-        .close-video:hover { 
-            background: #ff6b6b; 
-            color: white; 
-        }
+.size-label {
+  font-size: 11px;
+  color: #334155;
+  margin-top: 2px;
+  text-align: center;
+}
 
-        /* Стили для меню сайтов - БЕЗ ТЕНИ */
-        #sites-menu-title {
-            display: none;
-            position: absolute;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 2px 8px;
-            background: #5e6f87;
-            color: white;
-            font-size: 13px;
-            border-radius: 6px 6px 0 0;
-            z-index: 20;
-        }
-        #sites-menu {
-            display: none;
-            position: absolute;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 260px;
-            max-height: 220px;
-            padding: 10px 8px 4px 8px;
-            background: #f0f8ff;
-            border-radius: 10px;
-            border: 1px solid #cfe2ff;
-            font-size: 13px;
-            overflow-x: hidden;
-            overflow-y: auto;
-            z-index: 19;
-        }
-        #sites-menu a {
-            display: block;
-            padding: 4px 0 4px 4px;
-            color: #5e6f87;
-            text-decoration: none;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        #sites-menu a:hover {
-            text-decoration: underline;
-            background: #e3f2fd;
-            border-radius: 4px;
-        }
+.instruction-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+.instruction-buttons button {
+  background:#1e293b;
+  color:#fff;
+  border:none;
+  border-radius:8px;
+  padding:8px 12px;
+  cursor:pointer;
+  font-size:13px;
+}
+.instruction-buttons button:hover{background:#334155;}
 
-        /* Автор - БЕЗ ТЕНИ */
-        .author-badge {
-            position: relative;
-            margin-top: 10px;
-            text-align: center;
-            font-size: 11px;
-            font-family: Arial, sans-serif;
-            letter-spacing: 0.5px;
-            animation: fadeLoop 3s ease-in-out infinite;
-        }
-        #author-link {
-            color: rgba(100, 100, 100, 0.8);
-            text-decoration: none;
-            display: inline-block;
-            transition: color 0.3s ease;
-        }
-        #author-link:hover {
-            color: #5e6f87;
-        }
-        @keyframes fadeLoop {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
-        }
-
-        @media (max-width: 768px) { 
-            .controls { flex-direction: column; padding: 15px; } 
-            .size-group { flex-wrap: wrap; } 
-            .help-btn { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 18px; }
-        }
-    </style>
+/* Стиль для ссылки на автора */
+.footer {
+  text-align: center;
+  font-size: 10px;
+  color: #334155;
+  margin: 8px 0;
+}
+.footer a {
+  color: #334155;
+  text-decoration: none;
+}
+.footer a:hover {
+  text-decoration: underline;
+}
+</style>
 </head>
 <body>
-    <div class="app">
-        <div class="header">
-            <h2>🎨 Конструктор обложек для VK</h2>
-            <small>••••••••••••••••••••</small>
-            
-            <!-- КРУГЛАЯ КНОПКА ПОМОЩИ - ТЁМНО-СЕРЫЙ -->
-            <button class="help-btn" title="Смотреть инструкцию" onclick="openHelpVideo()">
-                ❓
-            </button>
-        </div>
 
-        <div class="canvas-container">
-            <canvas id="canvas"></canvas>
-        </div>
+<div class="app">
+  <div class="header">
+    <h2>🎨 Конструктор обложек для VK</h2>
+    <button class="help-btn" onclick="openHelp()">❓</button>
+  </div>
 
-        <div class="controls">
-            <div class="size-group">
-                <label>Фон:</label>
-                <input type="number" id="width" value="1920" min="1">
-                <label>×</label>
-                <input type="number" id="height" value="768" min="1">
-                <button onclick="applyResize()">▲ Размер фона</button>
-            </div>
+  <div class="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
 
-            <label class="upload-btn">
-                <input type="file" id="upload-bg" accept="image/png,image/jpeg">
-                🖼️ Фон PNG/JPG
-            </label>
+  <div class="controls">
+    <button class="sites-btn" onclick="toggleSites(event)">🌐 Сайты</button>
 
-            <label class="upload-btn overlay-upload">
-                <input type="file" id="upload-overlay" accept="image/png,image/jpeg">
-                ➕ Overlay PNG/JPG
-            </label>
-
-            <div class="size-group">
-                <label> :</label>
-                <button id="toggle-sites-btn">🌐 Открыть меню</button>
-            </div>
-
-            <button onclick="clearCanvas()">🗑️ Очистить</button>
-
-            <div class="size-group">
-                <label>Скачать:</label>
-                <select id="format">
-                    <option value="image/png">PNG</option>
-                    <option value="image/jpeg">JPG</option>
-                </select>
-                <button onclick="downloadCanvas()">💾 Скачать</button>
-            </div>
-
-            <div class="slider-group" style="display:none;" id="overlay-slider">
-                <label>Размер overlay:</label>
-                <input type="range" id="overlay-scale" min="10" max="200" value="30" style="width:120px;">
-            </div>
-        </div>
-
-        <!-- Автор -->
-        <div class="author-badge">
-            <a href="https://vk.com/muzer_play" target="_blank" id="author-link">
-                автор приложения для VK
-            </a>
-        </div>
+    <div class="size-inputs">
+      <div class="size-field">
+        <input id="width" type="number" value="1920" min="1">
+        <div class="size-label">Ширина (px)</div>
+      </div>
+      <div class="size-field">
+        <input id="height" type="number" value="768" min="1">
+        <div class="size-label">Высота (px)</div>
+      </div>
+      <button onclick="resizeCanvas()">Размер</button>
     </div>
 
-    <!-- МЕНЮ САЙТОВ -->
-    <div id="sites-menu-title">Сайты нейросетей</div>
-    <div id="sites-menu">
-        <a href="https://pr-cy.ru/ai-image-generator" target="_blank">pr-cy. ai.</a>
-        <a href="https://mashagpt.ru/tools/generator-kartinok" target="_blank">mashagpt</a>
-        <a href="https://magiceraser.org/ru/ai-image-editor" target="_blank">Magic Eraser</a>
-        <a href="https://imgupscaler.ai/ru/image-to-image" target="_blank">imgupscaler.ai</a>
-        <a href="https://fabula-ai.com/tools/art-generator" target="_blank">fabula-ai</a>
-        <a href="https://chat.qwen.ai" target="_blank">Qwen</a>
-        <a href="https://ru.textstudio.com/" target="_blank">Генератор шрифтов</a>
+    <select id="downloadFormat">
+      <option value="png">PNG</option>
+      <option value="jpeg">JPG</option>
+    </select>
+
+    <button onclick="downloadCanvas()">Скачать</button>
+  </div>
+
+  <div class="upload-buttons">
+    <label class="upload-btn">Загрузить Фон PNG/JPG
+      <input type="file" id="bg" accept="image/png,image/jpeg">
+    </label>
+
+    <label class="upload-btn">Загрузить Overlay PNG/JPG
+      <input type="file" id="overlay" accept="image/png,image/jpeg">
+    </label>
+
+    <div class="slider-group" id="overlaySlider">
+      <label>Размер overlay:</label>
+      <input type="range" id="slider" min="10" max="200" value="30">
     </div>
+  </div>
 
-    <!-- МОДАЛЬНОЕ ОКНО ВИДЕО -->
-    <div class="video-modal" id="videoModal">
-        <div class="video-container">
-            <button class="close-video" onclick="closeHelpVideo()" title="Закрыть">×</button>
-            <video id="helpVideo" controls preload="metadata">
-                <source src="video.mp4" type="video/mp4">
-                <source src="video.webm" type="video/webm">
-                <p>Загрузите файл <strong>video.mp4</strong> в папку с конструктором.</p>
-            </video>
-        </div>
+  <div class="footer">
+    <a href="https://vk.com/muzer_play" target="_blank">Автор приложения</a>
+  </div>
+</div>
+
+<div id="sitesMenu">
+  <div class="menu-title">Сайты нейросетей</div>
+  <a href="https://pr-cy.ru/ai-image-generator" target="_blank">pr-cy</a>
+  <a href="https://mashagpt.ru/chat/tools/generator-kartinok" target="_blank">mashagpt</a>
+  <a href="https://magiceraser.org" target="_blank">magic eraser</a>
+  <a href="https://imgupscaler.ai" target="_blank">imgupscaler</a>
+  <a href="https://fabula-ai.com" target="_blank">fabula ai</a>
+  <a href="https://chat.qwen.ai" target="_blank">Qwen </a>
+  <a href="https://ru.textstudio.com" target="_blank">Генератор шрифтов </a>
+</div>
+
+<div class="help-modal" id="help">
+  <div class="help-content">
+    <button class="close-help" onclick="closeHelp()">✕</button>
+    <h3>Инструкция по использованию конструктора</h3>
+    <ol>
+      <li>Установите нужный размер фона (1920×768 для групп vk)</li>
+      <li>Установите размер фона с помощью полей <b>Ширина</b> и <b>Высота</b>, затем нажмите <b>Размер</b>.</li>
+      <li>Загрузите фоновое изображение (PNG или JPG) через кнопку <b>Загрузить Фон</b>.</li>
+      <li>Загрузите overlay через кнопку <b>Загрузить Overlay</b> (PNG или JPG).</li>
+      <li>overlay это (логотип, текст, в формате PNG или JPG )</li>
+      <li>Перетаскивайте overlay мышкой по холсту.</li>
+      <li>Настройте размер overlay с помощью регулятора. рядом с кнопкой Overlay.</li>
+      <li>Выберите формат (PNG или JPG) и нажмите <b>Скачать</b>.</li>
+    </ol>
+    <div class="instruction-buttons">
+      <button onclick="openVideo1()">🎥 Как сделать обложку из ОБЫЧНЫХ КАРТИНОК ИЗ ИНТЕРНЕТА</button>
+      <button onclick="openVideo2()">🎥 Как сделать обложку из картинки нейросети</button>
     </div>
+  </div>
+</div>
 
-    <script>
-        // VK Bridge
-        vkBridge.send('VKWebAppInit').then(() => console.log('VK Bridge OK')).catch(console.error);
+<div class="video-modal" id="videoModal">
+  <div class="video-container">
+    <button class="close-video" onclick="closeVideo()">✕</button>
+    <iframe id="videoFrame" frameborder="0" allowfullscreen></iframe>
+  </div>
+</div>
 
-        // Canvas
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        const widthInput = document.getElementById('width');
-        const heightInput = document.getElementById('height');
-        const overlaySlider = document.getElementById('overlay-slider');
-        const overlayScale = document.getElementById('overlay-scale');
+<script>
+vkBridge.send('VKWebAppInit');
 
-        let backgroundImage = null;
-        let overlayImage = null;
-        let overlayX = 100, overlayY = 100, overlayW = 200, overlayH = 200;
-        let overlayBaseScale = 0.3;
-        let isDragging = false;
-        let startX, startY;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = 1920;
+canvas.height = 768;
 
-        // Инициализация
-        canvas.width = 1920;
-        canvas.height = 768;
-        initCanvas();
-        updateCanvasView();
+let bgImg = null, ovImg = null;
+let ovX = 100, ovY = 100, ovW = 200, ovH = 200;
+let drag = false, startX, startY;
 
-        // Canvas функции
-        function initCanvas() {
-            ctx.fillStyle = '#f0f0f0';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
+function drawCanvas() {
+  ctx.fillStyle = '#e2e8f0';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  if(bgImg) ctx.drawImage(bgImg,0,0,canvas.width,canvas.height);
+  if(ovImg) ctx.drawImage(ovImg,ovX,ovY,ovW,ovH);
 
-        function updateCanvasView() {
-            canvas.style.maxWidth = '100%';
-            canvas.style.maxHeight = '400px';
-            canvas.style.width = 'auto';
-            canvas.style.height = 'auto';
-        }
+  // Водяной знак
+  const watermarkText = "Конструктор обложек для VK";
+  ctx.font = `${Math.floor(canvas.width/90)}px Arial`;
+  ctx.textAlign = "right";
+  ctx.textBaseline = "bottom";
+  ctx.fillStyle = "rgba(255,255,255,0.3)";
+  ctx.shadowColor = "rgba(0,0,0,0.5)";
+  ctx.shadowOffsetX = 2;
+  ctx.shadowOffsetY = 2;
+  ctx.shadowBlur = 2;
+  ctx.fillText(watermarkText, canvas.width - 10, canvas.height - 10);
+}
 
-        // ВИДЕО ПОМОЩЬ
-        function openHelpVideo() {
-            const modal = document.getElementById('videoModal');
-            const video = document.getElementById('helpVideo');
-            modal.classList.add('active');
-            video.play().catch(e => console.log('Автовоспроизведение заблокировано'));
-        }
+function loadImage(input, callback){
+  const file = input.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => callback(img);
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
 
-        function closeHelpVideo() {
-            const modal = document.getElementById('videoModal');
-            const video = document.getElementById('helpVideo');
-            modal.classList.remove('active');
-            video.pause();
-            video.currentTime = 0;
-        }
+document.getElementById('bg').addEventListener('change', e=>loadImage(e.target,img=>{bgImg=img;drawCanvas();}));
+document.getElementById('overlay').addEventListener('change', e=>loadImage(e.target,img=>{
+  ovImg=img; 
+  const scale = document.getElementById('slider').value/100;
+  ovW = img.width*scale;
+  ovH = img.height*scale;
+  drawCanvas();
+}));
 
-        // Обработчики видео
-        document.getElementById('videoModal').addEventListener('click', (e) => {
-            if (e.target === e.currentTarget) closeHelpVideo();
-        });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeHelpVideo();
-        });
+document.getElementById('slider').addEventListener('input', e=>{
+  if(!ovImg) return;
+  const scale = e.target.value/100;
+  ovW = ovImg.width*scale;
+  ovH = ovImg.height*scale;
+  drawCanvas();
+});
 
-        // Загрузка изображений
-        document.getElementById('upload-bg').addEventListener('change', (e) => {
-            loadImage(e.target.files[0], (img) => {
-                backgroundImage = img;
-                redraw();
-            });
-        });
+canvas.addEventListener('mousedown', e=>{
+  const rect = canvas.getBoundingClientRect();
+  const x = (e.clientX-rect.left)*canvas.width/rect.width;
+  const y = (e.clientY-rect.top)*canvas.height/rect.height;
+  if(ovImg && x>=ovX && x<=ovX+ovW && y>=ovY && y<=ovY+ovH){drag=true; startX=e.clientX; startY=e.clientY;}
+});
+window.addEventListener('mousemove', e=>{
+  if(!drag) return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width/rect.width;
+  const scaleY = canvas.height/rect.height;
+  const dx = (e.clientX-startX)*scaleX;
+  const dy = (e.clientY-startY)*scaleY;
+  ovX = Math.max(0,Math.min(ovX+dx,canvas.width-ovW));
+  ovY = Math.max(0,Math.min(ovY+dy,canvas.height-ovH));
+  startX = e.clientX; startY = e.clientY;
+  drawCanvas();
+});
+window.addEventListener('mouseup', ()=>{drag=false;});
 
-        document.getElementById('upload-overlay').addEventListener('change', (e) => {
-            loadImage(e.target.files[0], (img) => {
-                overlayImage = img;
-                overlayBaseScale = 0.3;
-                overlayW = img.width * overlayBaseScale;
-                overlayH = img.height * overlayBaseScale;
-                redraw();
-                setupOverlaySlider();
-            });
-        });
+function toggleSites(e){
+  e.stopPropagation();
+  const menu = document.getElementById('sitesMenu');
+  menu.style.display = menu.style.display==='block'?'none':'block';
+}
+document.addEventListener('click', e=>{
+  const menu = document.getElementById('sitesMenu');
+  if(menu.contains(e.target)) return;
+  menu.style.display='none';
+});
 
-        function loadImage(file, callback) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => callback(img);
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
+function openHelp(){document.getElementById('help').classList.add('active');}
+function closeHelp(){document.getElementById('help').classList.remove('active');}
 
-        function redraw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#f0f0f0';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+function resizeCanvas(){
+  const w=parseInt(document.getElementById('width').value);
+  const h=parseInt(document.getElementById('height').value);
+  if(w>0 && h>0){canvas.width=w;canvas.height=h;drawCanvas();}
+}
 
-            if (backgroundImage) {
-                ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-            }
+function downloadCanvas(){
+  const format = document.getElementById('downloadFormat').value;
+  const link = document.createElement('a');
+  if(format==='jpeg'){
+    link.href = canvas.toDataURL('image/jpeg', 0.9);
+    link.download = `vk_cover_${canvas.width}x${canvas.height}.jpg`;
+  } else {
+    link.href = canvas.toDataURL('image/png');
+    link.download = `vk_cover_${canvas.width}x${canvas.height}.png`;
+  }
+  link.click();
+}
 
-            if (overlayImage) {
-                ctx.save();
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.drawImage(overlayImage, overlayX, overlayY, overlayW, overlayH);
-                ctx.restore();
-            }
-        }
+function openVideo1(){
+  document.getElementById('help').classList.remove('active');
+  document.getElementById('videoModal').classList.add('active');
+  document.getElementById('videoFrame').src='https://vk.com/video_ext.php?oid=186464231&id=456239965&autoplay=1';
+}
+function openVideo2(){
+  document.getElementById('help').classList.remove('active');
+  document.getElementById('videoModal').classList.add('active');
+  document.getElementById('videoFrame').src='https://vk.com/video_ext.php?oid=186464231&id=456239966&hash=1a10e0c4cab386c6&hd=3';
+}
+function closeVideo(){
+  document.getElementById('videoModal').classList.remove('active');
+  document.getElementById('videoFrame').src='';
+}
 
-        function applyResize() {
-            canvas.width = parseInt(widthInput.value);
-            canvas.height = parseInt(heightInput.value);
-            overlayX = Math.max(0, Math.min(overlayX, canvas.width - 50));
-            overlayY = Math.max(0, Math.min(overlayY, canvas.height - 50));
-            redraw();
-            updateCanvasView();
-        }
-
-        function clearCanvas() {
-            backgroundImage = null;
-            overlayImage = null;
-            overlayX = 100; overlayY = 100;
-            overlayW = 200; overlayH = 200;
-            overlaySlider.style.display = 'none';
-            document.getElementById('upload-bg').value = '';
-            document.getElementById('upload-overlay').value = '';
-            initCanvas();
-            updateCanvasView();
-        }
-
-        function downloadCanvas() {
-            const format = document.getElementById('format').value;
-            const link = document.createElement('a');
-            link.download = `oblozhka_vk_${canvas.width}x${canvas.height}.${format === 'image/png' ? 'png' : 'jpg'}`;
-            link.href = canvas.toDataURL(format, 0.95);
-            link.click();
-        }
-
-        function setupOverlaySlider() {
-            overlaySlider.style.display = 'flex';
-            overlayScale.value = Math.round(overlayBaseScale * 100);
-            overlayScale.oninput = () => {
-                const scale = parseInt(overlayScale.value) / 100;
-                if (overlayImage) {
-                    overlayW = overlayImage.width * scale;
-                    overlayH = overlayImage.height * scale;
-                    redraw();
-                }
-            };
-        }
-
-        // Drag & Drop
-        canvas.addEventListener('mousedown', startDrag);
-        document.addEventListener('mousemove', doDrag);
-        document.addEventListener('mouseup', () => { isDragging = false; });
-
-        function startDrag(e) {
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const x = (e.clientX - rect.left) * scaleX;
-            const y = (e.clientY - rect.top) * scaleY;
-
-            if (overlayImage && x >= overlayX && x <= overlayX + overlayW && y >= overlayY && y <= overlayY + overlayH) {
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-            }
-        }
-
-        function doDrag(e) {
-            if (!overlayImage || !isDragging) return;
-
-            const rect = canvas.getBoundingClientRect();
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-            const dx = (e.clientX - startX) * scaleX;
-            const dy = (e.clientY - startY) * scaleY;
-
-            overlayX += dx;
-            overlayY += dy;
-            overlayX = Math.max(0, Math.min(overlayX, canvas.width - overlayW));
-            overlayY = Math.max(0, Math.min(overlayY, canvas.height - overlayH));
-
-            startX = e.clientX;
-            startY = e.clientY;
-            redraw();
-        }
-
-        // Меню сайтов
-        document.getElementById('toggle-sites-btn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            const menuTitle = document.getElementById('sites-menu-title');
-            const menu = document.getElementById('sites-menu');
-            const isVisible = menu.style.display === 'block';
-
-            if (!isVisible) {
-                menuTitle.style.display = 'block';
-                menu.style.display = 'block';
-            } else {
-                menuTitle.style.display = 'none';
-                menu.style.display = 'none';
-            }
-        });
-
-        document.addEventListener('click', () => {
-            const menuTitle = document.getElementById('sites-menu-title');
-            const menu = document.getElementById('sites-menu');
-            if (menu.style.display === 'block') {
-                menuTitle.style.display = 'none';
-                menu.style.display = 'none';
-            }
-        });
-    </script>
+drawCanvas();
+</script>
 </body>
 </html>
